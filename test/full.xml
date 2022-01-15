@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<root>
+<element1 attr1="hello" attr2="world">
+<child1>I am required</child1>
+<int-child>-23</int-child>
+<wacky:child>1</wacky:child>
+</element1>
+<element2>
+<child2>I am optional</child2>
+<repeated>
+<anotherone>Another one</anotherone>
+</repeated>
+<repeated>
+<anotherone optionalattr="yes">Another two</anotherone>
+</repeated>
+</element2>
+</root>
