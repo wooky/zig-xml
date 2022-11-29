@@ -4,7 +4,7 @@ const xml = @import("lib.zig");
 
 const Parser = @This();
 const logger = std.log.scoped(.@"zupnp.xml.Parser");
-usingnamespace @import("traverser.zig").StructTraverser(Parser);
+pub usingnamespace @import("traverser.zig").StructTraverser(Parser);
 
 pub fn DecodeResult(comptime T: type) type {
     return struct {

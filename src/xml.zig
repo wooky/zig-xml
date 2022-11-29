@@ -62,7 +62,7 @@ pub const Node = union(enum) {
 
 /// XML document.
 pub const Document = struct {
-    usingnamespace AbstractNode(Document);
+    pub usingnamespace AbstractNode(Document);
 
     handle: *c.IXML_Document,
 
@@ -76,7 +76,7 @@ pub const Document = struct {
     /// Parse document from sentinel-terminated string.
     pub fn fromString(doc: [:0]const u8) !Document {
         var handle: [*c]c.IXML_Document = undefined;
-        try check(c.ixmlParseBufferEx(doc, &handle), "Cannot parse document from string", "warn");
+        try check(c.ixmlParseBufferEx(doc.ptr, &handle), "Cannot parse document from string", "warn");
         return Document.init(handle);
     }
 
@@ -91,20 +91,20 @@ pub const Document = struct {
     /// Create a new element with the specified tag name, belonging to this document. Use `appendChild()` to insert it into another node.
     pub fn createElement(self: *const Document, tag_name: [:0]const u8) !Element {
         var element_handle: [*c]c.IXML_Element = undefined;
-        try check(c.ixmlDocument_createElementEx(self.handle, tag_name, &element_handle), "Failed to create element", "err");
+        try check(c.ixmlDocument_createElementEx(self.handle, tag_name.ptr, &element_handle), "Failed to create element", "err");
         return Element.init(element_handle);
     }
 
     /// Create a text node with the specified data, belonging to this document. Use `appendChild()` to insert it into another node.
     pub fn createTextNode(self: *const Document, data: [:0]const u8) !TextNode {
         var node_handle: [*c]c.IXML_Node = undefined;
-        try check(c.ixmlDocument_createTextNodeEx(self.handle, data, &node_handle), "Failed to create text node", "err");
+        try check(c.ixmlDocument_createTextNodeEx(self.handle, data.ptr, &node_handle), "Failed to create text node", "err");
         return TextNode.init(node_handle);
     }
 
     /// Get all elements by tag name in this document.
     pub fn getElementsByTagName(self: *const Document, tag_name: [:0]const u8) NodeList {
-        return NodeList.init(c.ixmlDocument_getElementsByTagName(self.handle, tag_name));
+        return NodeList.init(c.ixmlDocument_getElementsByTagName(self.handle, tag_name.ptr));
     }
 
     /// Convert the document into a string. Adds the XML prolog to the beginning.
@@ -119,7 +119,7 @@ pub const Document = struct {
 
 /// XML element.
 pub const Element = struct {
-    usingnamespace AbstractNode(Element);
+    pub usingnamespace AbstractNode(Element);
 
     handle: *c.IXML_Element,
 
@@ -134,7 +134,7 @@ pub const Element = struct {
 
     /// Get single attribute of this element, if it exists.
     pub fn getAttribute(self: *const Element, name: [:0]const u8) ?[:0]const u8 {
-        if (c.ixmlElement_getAttribute(self.handle, name)) |attr| {
+        if (c.ixmlElement_getAttribute(self.handle, name.ptr)) |attr| {
             return std.mem.sliceTo(attr, 0);
         }
         return null;
@@ -142,7 +142,7 @@ pub const Element = struct {
 
     /// Set or replace an attribute of this element.
     pub fn setAttribute(self: *const Element, name: [:0]const u8, value: [:0]const u8) !void {
-        try check(c.ixmlElement_setAttribute(self.handle, name, value), "Failed to set attribute", "err");
+        try check(c.ixmlElement_setAttribute(self.handle, name.ptr, value.ptr), "Failed to set attribute", "err");
     }
 
     /// Remove an attributes from this element.
@@ -157,13 +157,13 @@ pub const Element = struct {
 
     /// Get all child elements with the specified tag name.
     pub fn getElementsByTagName(self: *const Element, tag_name: [:0]const u8) NodeList {
-        return NodeList.init(c.ixmlElement_getElementsByTagName(self.handle, tag_name));
+        return NodeList.init(c.ixmlElement_getElementsByTagName(self.handle, tag_name.ptr));
     }
 };
 
 /// XML text node, which only contains a string value.
 pub const TextNode = struct {
-    usingnamespace AbstractNode(TextNode);
+    pub usingnamespace AbstractNode(TextNode);
 
     handle: *c.IXML_Node,
 
@@ -261,7 +261,7 @@ pub const AttributeMap = struct {
 
     /// Get a text node for the corresponding attribute name, if it exists.
     pub fn getNamedItem(self: *const AttributeMap, name: [:0]const u8) ?TextNode {
-        if (c.ixmlNamedNodeMap_getNamedItem(self.handle, name)) |child_handle| {
+        if (c.ixmlNamedNodeMap_getNamedItem(self.handle, name.ptr)) |child_handle| {
             return TextNode.init(child_handle);
         }
         return null;
@@ -286,7 +286,7 @@ pub const DOMString = struct {
 inline fn check(err: c_int, comptime message: []const u8, comptime severity: []const u8) !void {
     if (err != c.IXML_SUCCESS) {
         @field(logger, severity)(message ++ ": {d}", .{err}); // TODO convert err to a more useful string
-        return xml.Error;
+        return error.XMLError;
     }
 }
 

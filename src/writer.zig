@@ -4,7 +4,7 @@ const xml = @import("lib.zig");
 
 const Writer = @This();
 const logger = std.log.scoped(.@"xml.Writer");
-usingnamespace @import("traverser.zig").StructTraverser(Writer);
+pub usingnamespace @import("traverser.zig").StructTraverser(Writer);
 
 arena: ArenaAllocator,
 doc: xml.Document = undefined,
